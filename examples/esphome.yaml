@@ -1,0 +1,19 @@
+# Merge these sections into the existing ESP32 configuration.
+# Remove external_components: [qr701] and the qr701: block first.
+# Keep your existing esphome, esp32, wifi, api, ota and logger settings.
+# Keep the GPIO pins that already work on your printer.
+uart:
+  id: printer_uart
+  tx_pin: GPIO17
+  # Omit rx_pin for transmit-only printing and turn off status in HA.
+  # Printer TX must be 3.3 V safe, or connected through a level shifter.
+  rx_pin: GPIO16
+  baud_rate: 19200
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+
+serial_proxy:
+  - name: QR701
+    uart_id: printer_uart
+    port_type: TTL

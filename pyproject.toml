@@ -1,0 +1,20 @@
+[project]
+name = "qr701-ha-integration"
+version = "0.1.0"
+description = "QR701 thermal printer for Home Assistant via ESPHome serial proxy"
+requires-python = ">=3.14.2"
+dependencies = ["serialx==1.15.1"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-asyncio", "pytest-homeassistant-custom-component"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
