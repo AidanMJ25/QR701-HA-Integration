@@ -81,8 +81,9 @@ async def test_setup_entities_print_action_and_unload(hass: HomeAssistant, print
     states = hass.states.async_all()
     assert len(states) == 15
     assert any(state.state == "idle" for state in states if state.domain == "sensor")
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
-    assert device is not None
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert len(devices) == 1
+    device = devices[0]
     await hass.services.async_call(
         DOMAIN, "print_text", {"device_id": device.id, "text": "Hello"}, blocking=True
     )
@@ -104,7 +105,9 @@ async def test_unknown_device_and_invalid_barcode(hass: HomeAssistant, printer):
         await hass.services.async_call(
             DOMAIN, "print_text", {"device_id": "missing", "text": "Hello"}, blocking=True
         )
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert len(devices) == 1
+    device = devices[0]
     with pytest.raises(ServiceValidationError):
         await hass.services.async_call(
             DOMAIN,
