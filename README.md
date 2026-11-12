@@ -2,8 +2,8 @@
 
 A custom Home Assistant integration for the QR701 58 mm thermal receipt printer.
 Home Assistant renders receipts and sends ESC/POS commands through **ESPHome Serial
-Proxy**. The ESP32 runs the stock `serial_proxy` component, replacing the original
-QR701 external component on that UART.
+Proxy**. The ESP32 exposes the printer UART using the stock `serial_proxy`
+component.
 
 ## Requirements
 
@@ -14,17 +14,48 @@ QR701 external component on that UART.
 - Printer RX is required. Printer TX is optional; enable hardware status only if
   printer TX is connected to ESP RX at a safe logic voltage.
 
+## ESPHome configuration
+
+The following configuration has been tested with the QR701 and this integration:
+
+```yaml
+uart:
+  id: printer_uart
+  tx_pin: GPIO17       # ESP32 TX → QR701 RXD
+  rx_pin: GPIO16       # ESP32 RX ← QR701 TXD
+  baud_rate: 9600
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+
+serial_proxy:
+  - id: printer_serial
+    uart_id: printer_uart
+    name: "Receipt Printer TTL"
+    port_type: TTL
+```
+
+Merge this into your existing ESPHome configuration, keeping your board, Wi-Fi,
+API, OTA and logger settings. The UART uses **9600 baud, 8 data bits, no parity,
+and 1 stop bit**. `printer_serial` is the ESPHome component ID;
+**Receipt Printer TTL** is the port name shown in Home Assistant.
+
+For transmit-only wiring, omit `rx_pin` and disable hardware status in the
+integration. With printer TXD connected safely to GPIO16, hardware status can be
+enabled if the printer firmware supports the status commands.
+
+The same configuration is available in [examples/esphome.yaml](examples/esphome.yaml).
+
 ## Install
 
 1. Copy `custom_components/qr701` into `/config/custom_components/qr701` on Home
    Assistant. Restart Home Assistant.
-2. Replace the ESPHome `qr701:` configuration and its external-component import
-   with the block in [examples/esphome.yaml](examples/esphome.yaml). Remove old
-   `qr701.*` actions and entities from that ESPHome YAML as well. Keep your working
-   UART pins, Wi-Fi, encrypted API, OTA, and board configuration. Flash the device.
+2. Add the UART and serial proxy configuration above to your ESPHome device,
+   then flash it. If `printer_uart` already exists, update that block instead of
+   defining it twice.
 3. Confirm the ESPHome device is connected in Home Assistant.
 4. Open **Settings → Devices & services → Add integration → QR701 Thermal Printer**.
-5. Select its **QR701** serial proxy port, set the baud rate, and choose whether
+5. Select **Receipt Printer TTL**, set the baud rate to **9600**, and choose whether
    hardware status is enabled. Setup opens the port and, when enabled, verifies
    all four status replies. Setup does not print anything.
 
@@ -34,8 +65,10 @@ is no TCP-to-UART server, MQTT broker, or manually copied encryption key involve
 The `usb` dependency registers the transport while ESPHome starts. The integration
 also accepts local serial paths and other serialx URLs through the selector.
 
-Only one component may own the printer UART. Do not run the old QR701 component,
-another printer integration, or a UART logger on it simultaneously.
+The original QR701 ESPHome external component can remain configured alongside
+`serial_proxy` on `printer_uart`; removing it is not required. Coordinate print
+jobs and status polling so the two control paths do not send commands or consume
+status replies at the same time. Keep UART logging off this printer UART.
 
 For HACS, add `https://github.com/AidanMJ25/QR701-HA-Integration` as a custom
 repository with category **Integration**, then install and restart. The original
