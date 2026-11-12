@@ -8,7 +8,7 @@ uart:
   # Omit rx_pin for transmit-only printing and turn off status in HA.
   # Printer TX must be 3.3 V safe, or connected through a level shifter.
   rx_pin: GPIO16
-  baud_rate: 19200
+  baud_rate: 9600
   data_bits: 8
   parity: NONE
   stop_bits: 1

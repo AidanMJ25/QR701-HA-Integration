@@ -10,7 +10,7 @@ QR701 external component on that UART.
 - Home Assistant **2026.11 or newer**. This targets its `SerialPortSelector`,
   `probatio`, and `serialx` APIs, following the LG TV via Serial integration.
 - ESPHome firmware with `serial_proxy` support, already added to Home Assistant.
-- Your working QR701 power supply and UART wiring. Default: **19200 baud, 8-N-1**.
+- Your working QR701 power supply and UART wiring. Default: **9600 baud, 8-N-1**.
 - Printer RX is required. Printer TX is optional; enable hardware status only if
   printer TX is connected to ESP RX at a safe logic voltage.
 

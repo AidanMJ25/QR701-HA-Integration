@@ -16,7 +16,7 @@ from custom_components.qr701.protocol import PrinterStatus
 DATA = {
     "name": "Receipt printer",
     "device": "esphome-hass://printer/?port_name=QR701",
-    "baudrate": 19200,
+    "baudrate": 9600,
     "status_enabled": True,
 }
 IDLE = PrinterStatus(False, False, False, False)
@@ -130,9 +130,9 @@ async def test_reconfigure_releases_exclusive_port(hass: HomeAssistant, printer)
         DOMAIN, context={"source": "reconfigure", "entry_id": entry.entry_id}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], DATA | {"baudrate": 9600}
+        result["flow_id"], DATA | {"baudrate": 19200}
     )
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.ABORT
-    assert entry.data["baudrate"] == 9600
+    assert entry.data["baudrate"] == 19200
     assert printer["close"].await_count >= 2

@@ -3,7 +3,7 @@
 DOMAIN = "qr701"
 CONF_BAUDRATE = "baudrate"
 CONF_STATUS = "status_enabled"
-DEFAULT_BAUDRATE = 19200
+DEFAULT_BAUDRATE = 9600
 BARCODES = {
     "UPC_A": 65,
     "UPC_E": 66,
