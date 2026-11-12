@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import MockConfigEntry, mock_component
 
 from custom_components.qr701.const import DOMAIN
 from custom_components.qr701.protocol import PrinterStatus
@@ -28,7 +28,10 @@ def enable_integration(enable_custom_integrations):
 
 
 @pytest.fixture
-def printer():
+def printer(hass: HomeAssistant):
+    # The serial transport is mocked below. Mark USB as loaded without importing
+    # its platform-specific discovery dependencies into this test environment.
+    mock_component(hass, "usb")
     with (
         patch(
             "custom_components.qr701.printer.QR701Printer.check",
@@ -39,9 +42,6 @@ def printer():
             "custom_components.qr701.printer.QR701Printer.close", new_callable=AsyncMock
         ) as close,
         patch("custom_components.qr701.printer.QR701Printer.send", new_callable=AsyncMock) as send,
-        patch(
-            "homeassistant.components.usb.async_setup", new_callable=AsyncMock, return_value=True
-        ),
     ):
         yield {"check": check, "close": close, "send": send}
 
