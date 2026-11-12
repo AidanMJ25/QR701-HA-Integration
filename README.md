@@ -84,8 +84,6 @@ The device exposes:
 - Feed paper (three lines) and refresh status buttons.
 - A status sensor, plus paper-out, cover-open and error sensors when status is on.
 
-Drafts are restored after restart and limited to **255 characters**, matching
-Home Assistant's entity-state limit. Use the actions below for longer receipts.
 `sending` means Home Assistant is transmitting data; it is **not** a physical
 printing-complete signal. With status disabled, the status sensor is `unknown`
 outside transmission; a connected proxy cannot prove that the printer is powered.
