@@ -104,6 +104,7 @@ async def async_setup_entry(hass, entry):
     except BaseException:
         await coordinator.printer.close()
         raise
+    return True
 
 
 async def async_unload_entry(hass, entry):
