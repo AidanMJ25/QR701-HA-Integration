@@ -87,16 +87,6 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
             await printer.close()
         return None
 
-    async def async_migrate_entry(self, hass, config_entry):
-        """Persist the QR701 default for entries created before model support."""
-        if config_entry.version == 1:
-            hass.config_entries.async_update_entry(
-                config_entry,
-                data={CONF_MODEL: DEFAULT_MODEL} | config_entry.data,
-                version=self.VERSION,
-            )
-        return True
-
     async def async_step_user(self, user_input=None):
         errors = {}
         if user_input is not None:
