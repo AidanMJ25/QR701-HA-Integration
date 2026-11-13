@@ -5,6 +5,12 @@ Home Assistant renders receipts and sends ESC/POS commands through **ESPHome Ser
 Proxy**. The ESP32 exposes the printer UART using the stock `serial_proxy`
 component.
 
+## Rongta RP326
+
+A separate RP326 integration is available in `custom_components/rp326`, carrying
+over the QR701 controls with 48-column receipts and a partial-cut action. See the
+[RP326 installation, RS-232 wiring and action guide](docs/rp326.md).
+
 ## Requirements
 
 - Home Assistant **2026.11 or newer**. This targets its `SerialPortSelector`,

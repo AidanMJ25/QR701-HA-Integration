@@ -1,0 +1,19 @@
+{
+  "domain": "rp326",
+  "name": "Rongta RP326 Thermal Printer",
+  "codeowners": [
+    "@AidanMJ25"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "usb"
+  ],
+  "documentation": "https://github.com/AidanMJ25/QR701-HA-Integration/blob/main/docs/rp326.md",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": [
+    "serialx==1.15.1"
+  ],
+  "version": "0.1.0",
+  "issue_tracker": "https://github.com/AidanMJ25/QR701-HA-Integration/issues"
+}

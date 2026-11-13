@@ -1,0 +1,236 @@
+{
+  "print_text": {
+    "name": "Print text",
+    "description": "Print text on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "text": {
+        "name": "text",
+        "required": true,
+        "selector": {
+          "text": {
+            "multiline": true
+          }
+        }
+      }
+    }
+  },
+  "print_markdown": {
+    "name": "Print Markdown",
+    "description": "Print Markdown on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "text": {
+        "name": "text",
+        "required": true,
+        "selector": {
+          "text": {
+            "multiline": true
+          }
+        }
+      }
+    }
+  },
+  "print_qr": {
+    "name": "Print QR code",
+    "description": "Print QR code on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "text": {
+        "name": "text",
+        "required": true,
+        "selector": {
+          "text": {
+            "multiline": true
+          }
+        }
+      },
+      "size": {
+        "name": "size",
+        "default": 5,
+        "selector": {
+          "number": {
+            "min": 1,
+            "max": 16,
+            "mode": "box"
+          }
+        }
+      },
+      "error_correction": {
+        "name": "error correction",
+        "default": "M",
+        "selector": {
+          "select": {
+            "options": [
+              "L",
+              "M",
+              "Q",
+              "H"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "print_barcode": {
+    "name": "Print barcode",
+    "description": "Print barcode on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "text": {
+        "name": "text",
+        "required": true,
+        "selector": {
+          "text": {}
+        }
+      },
+      "format": {
+        "name": "format",
+        "default": "CODE128",
+        "selector": {
+          "select": {
+            "options": [
+              "UPC_A",
+              "UPC_E",
+              "EAN13",
+              "EAN8",
+              "CODE39",
+              "ITF",
+              "CODABAR",
+              "CODE93",
+              "CODE128"
+            ]
+          }
+        }
+      },
+      "height": {
+        "name": "height",
+        "default": 80,
+        "selector": {
+          "number": {
+            "min": 1,
+            "max": 255,
+            "mode": "box"
+          }
+        }
+      },
+      "width": {
+        "name": "width",
+        "default": 2,
+        "selector": {
+          "number": {
+            "min": 2,
+            "max": 6,
+            "mode": "box"
+          }
+        }
+      },
+      "show_text": {
+        "name": "show text",
+        "default": true,
+        "selector": {
+          "boolean": {}
+        }
+      }
+    }
+  },
+  "feed": {
+    "name": "Feed paper",
+    "description": "Feed paper on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "lines": {
+        "name": "lines",
+        "default": 3,
+        "selector": {
+          "number": {
+            "min": 0,
+            "max": 255,
+            "mode": "box"
+          }
+        }
+      }
+    }
+  },
+  "refresh_status": {
+    "name": "Refresh status",
+    "description": "Refresh status on the selected RP326 printer.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      }
+    }
+  },
+  "cut": {
+    "name": "Cut paper",
+    "description": "Feed paper then request a partial cut. Actual cut behavior depends on firmware.",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "rp326"
+          }
+        }
+      },
+      "lines": {
+        "name": "lines",
+        "default": 3,
+        "selector": {
+          "number": {
+            "min": 0,
+            "max": 255,
+            "mode": "box"
+          }
+        }
+      }
+    }
+  }
+}

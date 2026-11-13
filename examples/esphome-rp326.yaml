@@ -1,0 +1,21 @@
+# Merge into an ESP32 configuration with Wi-Fi, api, OTA and logger.
+# GPIOs connect to the TTL side of a MAX3232, NEVER directly to DB9.
+# 9600 is an example: match the printer's self-test/configuration page.
+uart:
+  id: rp326_uart
+  tx_pin: GPIO17  # -> MAX3232 T1IN; T1OUT -> printer DB9 pin 3 (RX)
+  rx_pin: GPIO16  # <- MAX3232 R1OUT; R1IN <- printer DB9 pin 2 (TX)
+  baud_rate: 9600
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  tx_buffer_size: 256
+
+serial_proxy:
+  - id: rp326_serial
+    uart_id: rp326_uart
+    name: "Rongta RP326 RS232"
+    port_type: RS232
+# Connect signal ground to printer DB9 pin 5.
+# Use a 3.3 V compatible MAX3232 module powered at 3.3 V.
+# This example does not implement RTS/CTS or XON/XOFF.
