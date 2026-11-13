@@ -7,6 +7,8 @@ from .entity import QR701Entity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
+    if entry.runtime_data.model == "rp326":
+        async_add_entities([QR701Button(entry.runtime_data, entry, "cut", "Cut paper")])
     async_add_entities(
         [
             QR701Button(entry.runtime_data, entry, key, name)
@@ -33,6 +35,8 @@ class QR701Button(QR701Entity, ButtonEntity):
         c = self.coordinator
         if self.key == "refresh_status":
             await c.async_request_refresh()
+        elif self.key == "cut":
+            await c.async_print(protocol.cut, 3)
         elif self.key == "feed":
             await c.async_print(protocol.feed, 3)
         elif self.key == "print_qr":

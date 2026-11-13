@@ -16,6 +16,6 @@ class QR701Entity(CoordinatorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name=entry.title,
-            manufacturer="QR701",
-            model="QR701 58 mm TTL",
+            manufacturer="Rongta" if coordinator.model == "rp326" else "QR701",
+            model="RP326 80 mm RS-232" if coordinator.model == "rp326" else "QR701 58 mm TTL",
         )

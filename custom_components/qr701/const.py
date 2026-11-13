@@ -16,3 +16,7 @@ BARCODES = {
     "CODE128": 73,
 }
 STATUS_OPTIONS = ["idle", "sending", "offline", "paper_out", "cover_open", "error", "unknown"]
+
+CONF_MODEL = "model"
+DEFAULT_MODEL = "qr701"
+MODELS = {"qr701": "QR701", "rp326": "Rongta RP326"}

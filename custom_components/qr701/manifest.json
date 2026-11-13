@@ -1,6 +1,6 @@
 {
   "domain": "qr701",
-  "name": "QR701 Thermal Printer",
+  "name": "Thermal Receipt Printer",
   "codeowners": [
     "@AidanMJ25"
   ],
@@ -14,6 +14,6 @@
   "requirements": [
     "serialx==1.15.1"
   ],
-  "version": "0.1.0",
+  "version": "0.2.0",
   "issue_tracker": "https://github.com/AidanMJ25/QR701-HA-Integration/issues"
 }

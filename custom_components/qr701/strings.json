@@ -1,25 +1,27 @@
 {
-  "title": "QR701 Thermal Printer",
+  "title": "Thermal Receipt Printer",
   "config": {
     "step": {
       "user": {
-        "title": "Connect QR701",
-        "description": "Select the ESPHome QR701 serial proxy port. Turn off hardware status if printer TX is disconnected or status queries are unsupported.",
+        "title": "Connect printer",
+        "description": "Choose your printer model and serial port. Match the baud rate to your printer. Turn off hardware status if only the transmit wire is connected.",
         "data": {
           "name": "Printer name",
           "device": "Serial port",
           "baudrate": "Baud rate",
-          "status_enabled": "Enable hardware status (requires printer TX → ESP RX)"
+          "status_enabled": "Enable hardware status (requires printer TX → ESP RX)",
+          "model": "Printer model"
         }
       },
       "reconfigure": {
-        "title": "Reconfigure QR701",
-        "description": "Change the printer connection. The existing port will be released while the new settings are checked.",
+        "title": "Reconfigure printer",
+        "description": "Choose your printer model and serial port. Match the baud rate to your printer. Turn off hardware status if only the transmit wire is connected.",
         "data": {
           "name": "Printer name",
           "device": "Serial port",
           "baudrate": "Baud rate",
-          "status_enabled": "Enable hardware status (requires printer TX → ESP RX)"
+          "status_enabled": "Enable hardware status (requires printer TX → ESP RX)",
+          "model": "Printer model"
         }
       }
     },
@@ -27,7 +29,8 @@
       "cannot_connect": "Cannot open the serial port. Check that ESPHome is connected and the port is not in use.",
       "no_response": "No status reply. Check power, baud and RX wiring, or disable hardware status for transmit-only printing.",
       "invalid_response": "Invalid status reply. Check baud rate, wiring and printer status-command support.",
-      "proxy_not_ready": "ESPHome is still loading. Wait until the ESPHome device is connected, then try again."
+      "proxy_not_ready": "ESPHome is still loading. Wait until the ESPHome device is connected, then try again.",
+      "unsupported_baudrate": "Rongta RP326 supports 9600, 19200, 38400 or 115200 baud. Choose the rate shown on its self-test page."
     },
     "abort": {
       "already_configured": "This serial port is already configured.",

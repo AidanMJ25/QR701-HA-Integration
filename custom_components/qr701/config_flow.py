@@ -9,16 +9,35 @@ import serialx
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_DEVICE, CONF_NAME
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.selector import SerialPortSelector
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    SerialPortSelector,
+)
 
-from .const import CONF_BAUDRATE, CONF_STATUS, DEFAULT_BAUDRATE, DOMAIN
+from .const import (
+    CONF_BAUDRATE,
+    CONF_MODEL,
+    CONF_STATUS,
+    DEFAULT_BAUDRATE,
+    DEFAULT_MODEL,
+    DOMAIN,
+    MODELS,
+)
 from .printer import QR701Printer
 
 
 def schema(defaults):
     return vol.Schema(
         {
-            vol.Required(CONF_NAME, default=defaults.get(CONF_NAME, "QR701")): str,
+            vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL, DEFAULT_MODEL)): SelectSelector(
+                SelectSelectorConfig(
+                    options=[{"value": key, "label": label} for key, label in MODELS.items()],
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            vol.Required(CONF_NAME, default=defaults.get(CONF_NAME, "Receipt printer")): str,
             vol.Required(CONF_DEVICE, default=defaults.get(CONF_DEVICE, "")): SerialPortSelector(),
             vol.Required(
                 CONF_BAUDRATE, default=defaults.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)
@@ -32,6 +51,8 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def _validate(self, data):
+        if data.get(CONF_MODEL, DEFAULT_MODEL) == "rp326" and data[CONF_BAUDRATE] == 57600:
+            return "unsupported_baudrate"
         printer = QR701Printer(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS])
         try:
             await printer.check()

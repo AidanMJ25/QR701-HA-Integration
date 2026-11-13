@@ -63,6 +63,14 @@ async def async_setup(hass, config):
                 ),
             },
         ),
+        "cut": (
+            protocol.cut,
+            {
+                vol.Optional("lines", default=3): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=255)
+                ),
+            },
+        ),
         "refresh_status": (None, {}),
     }
 
@@ -80,7 +88,7 @@ async def async_setup(hass, config):
             ]
         )
         if len(entries) != 1:
-            raise ServiceValidationError("Select a loaded QR701 printer device")
+            raise ServiceValidationError("Select a loaded thermal printer device")
         coordinator = entries[0].runtime_data
         encoder = specs[call.service][0]
         if encoder is None:

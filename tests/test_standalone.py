@@ -24,6 +24,15 @@ from qr701_standalone.printer import QR701Printer  # noqa: E402
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_model_width_and_cutter(self):
+        self.assertIn(b"X" * 48 + b"\nX\n", p.text_receipt("X" * 49, columns=48))
+        self.assertIn(b"-" * 48 + b"\n", p.markdown_receipt("---", columns=48))
+        data = p.markdown_receipt("# " + "X" * 25, columns=48)
+        self.assertEqual(data.count(b"\x1ba\x01\x1b!\x30"), 2)
+        self.assertEqual(p.cut(2), b"\x1bd\x02\x1dV\x01")
+        with self.assertRaises(ValueError):
+            p.cut(256)
+
     def test_literal_wrap_and_controls(self):
         self.assertEqual(p.text_receipt("Hello"), b"\x1b@Hello\n\n\n\n")
         self.assertIn(b"X" * 32 + b"\nX\n", p.text_receipt("X" * 33))

@@ -31,9 +31,9 @@ def _wrap(text: str, width: int) -> list[str]:
     return textwrap.wrap(text, width, break_long_words=True, break_on_hyphens=False) or [""]
 
 
-def text_receipt(text: str) -> bytes:
-    """Wrap literal text at 32 columns and feed to the tear edge."""
-    lines = [part for line in text.splitlines() or [""] for part in _wrap(clean_text(line), 32)]
+def text_receipt(text: str, columns: int = 32) -> bytes:
+    """Wrap literal text at the selected model width and feed to the tear edge."""
+    lines = [part for line in text.splitlines() or [""] for part in _wrap(clean_text(line), columns)]
     return RESET + ("\n".join(lines) + "\n").encode("ascii") + FEED
 
 
@@ -74,7 +74,7 @@ def _styled_line(glyphs: list[tuple[str, int]], heading: bool) -> bytes:
     return bytes(data)
 
 
-def markdown_receipt(text: str) -> bytes:
+def markdown_receipt(text: str, columns: int = 32) -> bytes:
     """Render headings, lists, quotes, rules, links, and inline styles."""
     data = bytearray(RESET)
     fenced = False
@@ -85,15 +85,15 @@ def markdown_receipt(text: str) -> bytes:
             continue
         heading = re.match(r"^(#{1,3}) +(.+)$", source) if not fenced else None
         prefix = ""
-        width = 32
+        width = columns
         mode = 0
         if not fenced and re.fullmatch(r"([-*_])\1{2,}", source.strip()):
-            data.extend(b"-" * 32 + b"\n")
+            data.extend(b"-" * columns + b"\n")
             continue
         if heading:
             source = heading[2]
             mode = 0x30 if len(heading[1]) == 1 else 0x10
-            width = 16 if mode == 0x30 else 32
+            width = columns // 2 if mode == 0x30 else columns
         elif not fenced and source.startswith("> "):
             prefix, source = "| ", source[2:]
         elif not fenced and source.startswith(("- ", "* ", "+ ")):
@@ -211,3 +211,8 @@ def parse_status(values: bytes) -> PrinterStatus:
         bool(values[1] & 32 or values[3] & 96),
         bool(values[1] & 64 or values[2] & 0x6C),
     )
+
+
+def cut(lines: int = 3) -> bytes:
+    """Feed clear of the print head, then request a partial cut (RP326 only)."""
+    return feed(lines) + b"\x1dV\x01"

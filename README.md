@@ -1,15 +1,20 @@
-# QR701 Thermal Printer for Home Assistant
+# Thermal Receipt Printer for Home Assistant
 
-A custom Home Assistant integration for the QR701 58 mm thermal receipt printer.
+A custom Home Assistant integration for QR701 and Rongta RP326 thermal receipt printers.
+Choose your model from the **Printer model** dropdown during setup.
 Home Assistant renders receipts and sends ESC/POS commands through **ESPHome Serial
 Proxy**. The ESP32 exposes the printer UART using the stock `serial_proxy`
 component.
 
-## Rongta RP326
+## Supported printers
 
-A separate RP326 integration is available in `custom_components/rp326`, carrying
-over the QR701 controls with 48-column receipts and a partial-cut action. See the
-[RP326 installation, RS-232 wiring and action guide](docs/rp326.md).
+| Model | Connection | Text width | Cutter |
+| --- | --- | --- | --- |
+| QR701 | TTL UART | 32 columns | No |
+| Rongta RP326 | RS-232 through a MAX3232 or RS-232 adapter | 48 columns | Yes |
+
+Both models use the same installation and setup screen. For RP326 wiring, see
+[the RP326 guide](docs/rp326.md).
 
 ## Requirements
 
@@ -60,9 +65,10 @@ The same configuration is available in [examples/esphome.yaml](examples/esphome.
    then flash it. If `printer_uart` already exists, update that block instead of
    defining it twice.
 3. Confirm the ESPHome device is connected in Home Assistant.
-4. Open **Settings → Devices & services → Add integration → QR701 Thermal Printer**.
-5. Select **Receipt Printer TTL**, set the baud rate to **9600**, and choose whether
-   hardware status is enabled. Setup opens the port and, when enabled, verifies
+4. Open **Settings → Devices & services → Add integration → Thermal Receipt Printer**.
+5. Choose **QR701** or **Rongta RP326** in **Printer model**, select its serial port,
+   and match the baud rate to your printer. Choose whether hardware status is
+   enabled. Setup opens the port and, when enabled, verifies
    all four status replies. Setup does not print anything.
 
 The serial selector supplies an `esphome-hass://...` URL. `serialx` uses Home
@@ -82,12 +88,15 @@ ESPHome external-component repository is separate and remains available.
 
 ## Controls
 
+Controls follow the selected model. Existing QR701 devices keep their settings
+and entity IDs after upgrading. Use **Reconfigure** to change the model.
+
 The device exposes:
 
 - Text drafts for receipts, QR data, and barcode data.
 - Buttons to print literal text, Markdown, QR codes, or Code 128 barcodes.
 - QR module size (1–16) and error correction (L/M/Q/H), restored after restart.
-- Feed paper (three lines) and refresh status buttons.
+- Feed paper (three lines) and refresh status buttons; RP326 also has Cut paper.
 - A status sensor, plus paper-out, cover-open and error sensors when status is on.
 
 `sending` means Home Assistant is transmitting data; it is **not** a physical
@@ -96,7 +105,7 @@ outside transmission; a connected proxy cannot prove that the printer is powered
 
 ## Automation actions
 
-Choose the **QR701 printer device** in Developer Tools → Actions. Replace
+Choose the **printer device** in Developer Tools → Actions. Replace
 `YOUR_QR701_DEVICE_ID` below with that device's ID. These actions take `device_id`
 in `data`; they do not use a `target` entity ID.
 
@@ -135,12 +144,13 @@ data:
 
 | Action | Other fields |
 | --- | --- |
-| `qr701.print_text` | `text`: literal text, wraps at 32 columns |
+| `qr701.print_text` | `text`: literal text, wraps at 32 columns (QR701) or 48 (RP326) |
 | `qr701.print_markdown` | `text`: headings, inline styles, lists, quotes, links, rules, fenced code |
 | `qr701.print_qr` | `text`: 1–7092 UTF-8 bytes; `size`: 1–16; `error_correction`: L/M/Q/H |
 | `qr701.print_barcode` | `text`: up to 252 printable ASCII bytes; `format`, `height`: 1–255, `width`: 2–6, `show_text` |
 | `qr701.feed` | `lines`: 0–255, default 3 |
 | `qr701.refresh_status` | No additional fields |
+| `qr701.cut` | RP326 only; `lines`: 0–255, default 3, then partial cut |
 
 All actions require `device_id`. Text and Markdown actions accept up to 32,768
 characters. Barcode formats: UPC_A, UPC_E, EAN13, EAN8, CODE39, ITF, CODABAR,
@@ -155,7 +165,7 @@ the 384-dot print area; reduce module/bar width or payload length.
   this does not claim UTF-8 text support on an ESC/POS printer. QR data uses UTF-8.
 - Control characters in printable text are sanitized. Raw ESC/POS submission is
   intentionally not exposed as an action.
-- H1 headings wrap at 16 columns; other text wraps at 32. Bold/italic/underline
+- H1 headings wrap at 16/24 columns for QR701/RP326; other text wraps at 32/48. Bold/italic/underline
   and font changes depend on the printer's firmware. Strikethrough uses underline.
   Images, tables, HTML and CSS are not rendered.
 - Native QR and barcode commands match the original component. Firmware support

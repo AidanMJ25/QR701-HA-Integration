@@ -14,6 +14,7 @@ from custom_components.qr701.const import DOMAIN
 from custom_components.qr701.protocol import PrinterStatus
 
 DATA = {
+    "model": "qr701",
     "name": "Receipt printer",
     "device": "esphome-hass://printer/?port_name=QR701",
     "baudrate": 9600,
@@ -139,3 +140,69 @@ async def test_reconfigure_releases_exclusive_port(hass: HomeAssistant, printer)
     assert result["type"] is FlowResultType.ABORT
     assert entry.data["baudrate"] == 19200
     assert printer["close"].await_count >= 2
+
+
+async def test_model_dropdown(hass: HomeAssistant, printer):
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    fields = {key.schema: value for key, value in result["data_schema"].schema.items()}
+    selector = fields["model"]
+    assert selector.config["mode"] == "dropdown"
+    assert selector.config["options"] == [
+        {"value": "qr701", "label": "QR701"},
+        {"value": "rp326", "label": "Rongta RP326"},
+    ]
+
+
+async def test_rp326_model_print_and_cut(hass: HomeAssistant, printer):
+    entry = await load(hass, DATA | {"model": "rp326"})
+    assert len(hass.states.async_all()) == 16
+    device = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)[0]
+    assert device.manufacturer == "Rongta"
+    assert device.model == "RP326 80 mm RS-232"
+    await hass.services.async_call(
+        DOMAIN, "print_text", {"device_id": device.id, "text": "X" * 49}, blocking=True
+    )
+    assert b"X" * 48 + b"\nX\n" in printer["send"].await_args.args[0]
+    await hass.services.async_call(
+        DOMAIN, "cut", {"device_id": device.id, "lines": 2}, blocking=True
+    )
+    assert printer["send"].await_args.args[0] == b"\x1bd\x02\x1dV\x01"
+
+
+async def test_qr701_rejects_cutter(hass: HomeAssistant, printer):
+    entry = await load(hass)
+    device = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)[0]
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            DOMAIN, "cut", {"device_id": device.id}, blocking=True
+        )
+    printer["send"].assert_not_awaited()
+
+
+async def test_legacy_entry_defaults_to_qr701(hass: HomeAssistant, printer):
+    entry = await load(hass, {key: value for key, value in DATA.items() if key != "model"})
+    assert entry.runtime_data.model == "qr701"
+    assert len(hass.states.async_all()) == 15
+
+
+async def test_rp326_rejects_unsupported_baud(hass: HomeAssistant, printer):
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "user"}, data=DATA | {"model": "rp326", "baudrate": 57600}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "unsupported_baudrate"}
+    printer["check"].assert_not_awaited()
+
+
+async def test_reconfigure_model(hass: HomeAssistant, printer):
+    entry = await load(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "reconfigure", "entry_id": entry.entry_id}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], DATA | {"model": "rp326"}
+    )
+    await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.ABORT
+    assert entry.runtime_data.model == "rp326"
+    assert len(hass.states.async_all()) == 16

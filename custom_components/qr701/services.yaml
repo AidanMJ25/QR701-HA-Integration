@@ -1,7 +1,7 @@
 {
   "print_text": {
     "name": "Print text",
-    "description": "Print text on the selected QR701 printer.",
+    "description": "Print text on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -25,7 +25,7 @@
   },
   "print_markdown": {
     "name": "Print Markdown",
-    "description": "Print Markdown on the selected QR701 printer.",
+    "description": "Print Markdown on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -49,7 +49,7 @@
   },
   "print_qr": {
     "name": "Print QR code",
-    "description": "Print QR code on the selected QR701 printer.",
+    "description": "Print QR code on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -98,7 +98,7 @@
   },
   "print_barcode": {
     "name": "Print barcode",
-    "description": "Print barcode on the selected QR701 printer.",
+    "description": "Print barcode on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -168,7 +168,7 @@
   },
   "feed": {
     "name": "Feed paper",
-    "description": "Feed paper on the selected QR701 printer.",
+    "description": "Feed paper on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -194,7 +194,7 @@
   },
   "refresh_status": {
     "name": "Refresh status",
-    "description": "Refresh status on the selected QR701 printer.",
+    "description": "Refresh status on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
@@ -202,6 +202,32 @@
         "selector": {
           "device": {
             "integration": "qr701"
+          }
+        }
+      }
+    }
+  },
+  "cut": {
+    "name": "Cut paper",
+    "description": "Feed paper then cut it (Rongta RP326 only).",
+    "fields": {
+      "device_id": {
+        "name": "Printer",
+        "required": true,
+        "selector": {
+          "device": {
+            "integration": "qr701"
+          }
+        }
+      },
+      "lines": {
+        "name": "lines",
+        "default": 3,
+        "selector": {
+          "number": {
+            "min": 0,
+            "max": 255,
+            "mode": "box"
           }
         }
       }
