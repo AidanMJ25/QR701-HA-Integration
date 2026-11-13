@@ -6,6 +6,10 @@ Home Assistant renders receipts and sends ESC/POS commands through **ESPHome Ser
 Proxy**. The ESP32 exposes the printer UART using the stock `serial_proxy`
 component.
 
+The integration uses [`serialx`](https://github.com/puddly/serialx) for serial
+transport. It generates ESC/POS bytes itself; it does not use a separate ESC/POS
+printing library.
+
 ## Supported printers
 
 | Model | Connection | Text width | Cutter |
@@ -100,10 +104,24 @@ Controls follow the selected model. Use **Reconfigure** to change the model.
 
 Each model has its own driver module under `custom_components/receipt_printer/models/`.
 The driver holds its display/device metadata, text width, baud rates, cutter
-capability, status queries, and ESC/POS encoding hook. Add a model module and
-register it in `models/__init__.py`, then verify its commands and status behaviour
-on hardware. The shared config flow, entities, transport, and actions select that
-driver, so model-specific work stays isolated.
+capability, status queries, and ESC/POS encoding hook. The integration does not
+auto-detect these characteristics: take them from the printer manual and
+self-test page, then confirm them on the actual hardware.
+
+To support another printer:
+
+1. Add a driver module, such as `models/example_model.py`, defining its
+   `PrinterModel` record.
+2. Register that model in `models/__init__.py`; it then appears in the setup
+   dropdown and is saved in the config entry by its model ID.
+3. Override `encode()` for command or text-encoding differences, and
+   `parse_status()` for a different status-reply format.
+4. Add protocol/transport tests and test the port, baud rate, printing, status,
+   cutter, and flow-control behaviour on the real printer.
+
+The shared config flow, entities, transport, and actions select the driver, so
+model-specific work stays isolated. ESC/POS support is a useful starting point,
+but it is not by itself a guarantee that an untested printer is supported.
 
 The device exposes:
 
@@ -120,13 +138,13 @@ outside transmission; a connected proxy cannot prove that the printer is powered
 ## Automation actions
 
 Choose the **printer device** in Developer Tools → Actions. Replace
-`YOUR_QR701_DEVICE_ID` below with that device's ID. These actions take `device_id`
+`YOUR_PRINTER_DEVICE_ID` below with that device's ID. These actions take `device_id`
 in `data`; they do not use a `target` entity ID.
 
 ```yaml
 action: receipt_printer.print_markdown
 data:
-  device_id: YOUR_QR701_DEVICE_ID
+  device_id: YOUR_PRINTER_DEVICE_ID
   text: |-
     # Shopping list
     **Remember the paper!**
@@ -139,7 +157,7 @@ data:
 ```yaml
 action: receipt_printer.print_qr
 data:
-  device_id: YOUR_QR701_DEVICE_ID
+  device_id: YOUR_PRINTER_DEVICE_ID
   text: https://blog.aidanmaurinjones.com
   size: 5
   error_correction: M
@@ -148,7 +166,7 @@ data:
 ```yaml
 action: receipt_printer.print_barcode
 data:
-  device_id: YOUR_QR701_DEVICE_ID
+  device_id: YOUR_PRINTER_DEVICE_ID
   text: "123456789012"
   format: CODE128
   height: 80
@@ -164,7 +182,7 @@ data:
 | `receipt_printer.print_barcode` | `text`: up to 252 printable ASCII bytes; `format`, `height`: 1–255, `width`: 2–6, `show_text` |
 | `receipt_printer.feed` | `lines`: 0–255, default 3 |
 | `receipt_printer.refresh_status` | No additional fields |
-| `receipt_printer.cut` | RP326 only; `lines`: 0–255, default 3, then partial cut |
+| `receipt_printer.cut` | Models with cutter support only; `lines`: 0–255, default 3, then partial cut |
 
 All actions require `device_id`. Text and Markdown actions accept up to 32,768
 characters. Barcode formats: UPC_A, UPC_E, EAN13, EAN8, CODE39, ITF, CODABAR,
@@ -187,8 +205,9 @@ the 384-dot print area; reduce module/bar width or payload length.
 - Jobs and status polls are serialized. Writes are chunked and paced for small
   printer buffers; there is no DTR flow control. Start with short receipts and
   test long jobs on your unit before relying on them unattended.
-- Hardware status uses `DLE EOT 1..4` with two seconds per reply. Some printer
-  revisions do not support these queries; disable status for those units.
+- Current drivers use `DLE EOT 1..4` with two seconds per reply. A future driver
+  can define different status queries and decoding. Disable status when a printer
+  does not support its configured queries.
 - Status is polled every 30 seconds. Broken connections are reopened on the next
   poll/action. A status timeout closes the port to discard untagged late replies.
 - A failed or partially transmitted print is **never automatically replayed**.
@@ -212,11 +231,10 @@ For Home Assistant tests, install `.[test]` in a separate environment and run
 `pytest tests/test_integration.py`. CI runs both suites. Hardware testing remains
 necessary before calling this release production-ready.
 
-Initial local validation: 15 standalone tests passed; six socket tests were
-skipped because the sandbox forbids TCP listeners. Ruff and Python compilation
-passed. The Home Assistant lifecycle suite is provided for CI and was not run
-locally; installation on a live Home Assistant instance and physical printer
-output have not been verified.
+Current local validation: 17 standalone tests passed; six socket tests were
+skipped because the environment forbids TCP listeners. Ruff and Python
+compilation passed. CI runs the Home Assistant lifecycle suite. Physical printer
+output still needs verification for every supported model and firmware revision.
 
 ## Sources
 
