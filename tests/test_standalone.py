@@ -19,9 +19,9 @@ for name in ("const", "protocol", "printer"):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 
+from qr701_standalone.const import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
 from qr701_standalone import protocol as p  # noqa: E402
 from qr701_standalone.printer import QR701Printer  # noqa: E402
-from qr701_standalone.const import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
 
 
 class ProtocolTests(unittest.TestCase):

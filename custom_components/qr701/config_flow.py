@@ -24,8 +24,8 @@ from .const import (
     DEFAULT_MODEL,
     DOMAIN,
     LEGACY_RP326_DOMAIN,
-    PRINTER_MODELS,
     MODELS,
+    PRINTER_MODELS,
     SUPPORTED_BAUDRATES,
 )
 from .printer import QR701Printer
