@@ -60,7 +60,7 @@ def port_is_configured(hass, device: str, excluding_entry_id: str | None = None)
 
 
 class ReceiptPrinterConfigFlow(ConfigFlow, domain=DOMAIN):
-    VERSION = 2
+    VERSION = 1
 
     async def _validate(self, data):
         try:
