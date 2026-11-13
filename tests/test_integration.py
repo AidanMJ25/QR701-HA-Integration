@@ -173,9 +173,7 @@ async def test_qr701_rejects_cutter(hass: HomeAssistant, printer):
     entry = await load(hass)
     device = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)[0]
     with pytest.raises(ServiceValidationError):
-        await hass.services.async_call(
-            DOMAIN, "cut", {"device_id": device.id}, blocking=True
-        )
+        await hass.services.async_call(DOMAIN, "cut", {"device_id": device.id}, blocking=True)
     printer["send"].assert_not_awaited()
 
 

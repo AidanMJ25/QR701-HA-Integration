@@ -33,7 +33,9 @@ def _wrap(text: str, width: int) -> list[str]:
 
 def text_receipt(text: str, columns: int = 32) -> bytes:
     """Wrap literal text at the selected model width and feed to the tear edge."""
-    lines = [part for line in text.splitlines() or [""] for part in _wrap(clean_text(line), columns)]
+    lines = [
+        part for line in text.splitlines() or [""] for part in _wrap(clean_text(line), columns)
+    ]
     return RESET + ("\n".join(lines) + "\n").encode("ascii") + FEED
 
 

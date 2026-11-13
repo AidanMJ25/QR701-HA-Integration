@@ -31,7 +31,9 @@ from .printer import QR701Printer
 def schema(defaults):
     return vol.Schema(
         {
-            vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL, DEFAULT_MODEL)): SelectSelector(
+            vol.Required(
+                CONF_MODEL, default=defaults.get(CONF_MODEL, DEFAULT_MODEL)
+            ): SelectSelector(
                 SelectSelectorConfig(
                     options=[{"value": key, "label": label} for key, label in MODELS.items()],
                     mode=SelectSelectorMode.DROPDOWN,
