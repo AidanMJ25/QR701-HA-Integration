@@ -202,11 +202,11 @@ async def test_unknown_model_is_rejected_before_opening_port(hass: HomeAssistant
 
 
 async def test_legacy_rp326_entry_reserves_its_serial_port(hass: HomeAssistant, printer):
-    legacy = MockConfigEntry(
-        domain="rp326", title="Old RP326", data=DATA | {"model": "rp326"}
-    )
+    legacy = MockConfigEntry(domain="rp326", title="Old RP326", data=DATA | {"model": "rp326"})
     legacy.add_to_hass(hass)
-    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"}, data=DATA)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "user"}, data=DATA
+    )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
     printer["check"].assert_not_awaited()
