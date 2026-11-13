@@ -23,7 +23,10 @@ from .const import (
     DEFAULT_BAUDRATE,
     DEFAULT_MODEL,
     DOMAIN,
+    LEGACY_RP326_DOMAIN,
+    PRINTER_MODELS,
     MODELS,
+    SUPPORTED_BAUDRATES,
 )
 from .printer import QR701Printer
 
@@ -43,17 +46,31 @@ def schema(defaults):
             vol.Required(CONF_DEVICE, default=defaults.get(CONF_DEVICE, "")): SerialPortSelector(),
             vol.Required(
                 CONF_BAUDRATE, default=defaults.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)
-            ): vol.In([9600, 19200, 38400, 57600, 115200]),
+            ): vol.In(SUPPORTED_BAUDRATES),
             vol.Required(CONF_STATUS, default=defaults.get(CONF_STATUS, True)): bool,
         }
     )
 
 
+def port_is_configured(hass, device: str, excluding_entry_id: str | None = None) -> bool:
+    """Prevent the shared and legacy integrations from owning one port together."""
+    return any(
+        entry.entry_id != excluding_entry_id
+        and entry.domain in (DOMAIN, LEGACY_RP326_DOMAIN)
+        and entry.data.get(CONF_DEVICE) == device
+        for entry in hass.config_entries.async_entries()
+    )
+
+
 class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+    VERSION = 2
 
     async def _validate(self, data):
-        if data.get(CONF_MODEL, DEFAULT_MODEL) == "rp326" and data[CONF_BAUDRATE] == 57600:
+        try:
+            model = PRINTER_MODELS[data.get(CONF_MODEL, DEFAULT_MODEL)]
+        except KeyError:
+            return "unsupported_model"
+        if data[CONF_BAUDRATE] not in model.baudrates:
             return "unsupported_baudrate"
         printer = QR701Printer(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS])
         try:
@@ -70,6 +87,16 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
             await printer.close()
         return None
 
+    async def async_migrate_entry(self, hass, config_entry):
+        """Persist the QR701 default for entries created before model support."""
+        if config_entry.version == 1:
+            hass.config_entries.async_update_entry(
+                config_entry,
+                data={CONF_MODEL: DEFAULT_MODEL} | config_entry.data,
+                version=self.VERSION,
+            )
+        return True
+
     async def async_step_user(self, user_input=None):
         errors = {}
         if user_input is not None:
@@ -77,6 +104,8 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
                 hashlib.sha256(user_input[CONF_DEVICE].encode()).hexdigest()
             )
             self._abort_if_unique_id_configured()
+            if port_is_configured(self.hass, user_input[CONF_DEVICE]):
+                return self.async_abort(reason="already_configured")
             error = await self._validate(user_input)
             if error is None:
                 return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
@@ -90,10 +119,7 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             unique_id = hashlib.sha256(user_input[CONF_DEVICE].encode()).hexdigest()
-            if any(
-                other.entry_id != entry.entry_id and other.unique_id == unique_id
-                for other in self._async_current_entries()
-            ):
+            if port_is_configured(self.hass, user_input[CONF_DEVICE], entry.entry_id):
                 return self.async_abort(reason="already_configured")
             # The loaded coordinator owns the proxy exclusively. Unload before
             # testing the replacement configuration; restore on validation error.

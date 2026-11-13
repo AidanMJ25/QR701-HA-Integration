@@ -21,7 +21,8 @@ Both models use the same installation and setup screen. For RP326 wiring, see
 - Home Assistant **2026.11 or newer**. This targets its `SerialPortSelector`,
   `probatio`, and `serialx` APIs, following the LG TV via Serial integration.
 - ESPHome firmware with `serial_proxy` support, already added to Home Assistant.
-- Your working QR701 power supply and UART wiring. Default: **9600 baud, 8-N-1**.
+- Your printer's correct power supply and serial wiring. Start with **9600 baud,
+  8-N-1** unless its self-test page says otherwise.
 - Printer RX is required. Printer TX is optional; enable hardware status only if
   printer TX is connected to ESP RX at a safe logic voltage.
 
@@ -82,6 +83,12 @@ The original QR701 ESPHome external component can remain configured alongside
 jobs and status polling so the two control paths do not send commands or consume
 status replies at the same time. Keep UART logging off this printer UART.
 
+The included legacy `rp326` integration may remain installed for existing
+entries, but it cannot be configured on a port already used by the shared
+integration (or vice versa). Remove the old entry before moving that printer to
+the model dropdown; Home Assistant cannot change a config entry's domain in
+place.
+
 For HACS, add `https://github.com/AidanMJ25/QR701-HA-Integration` as a custom
 repository with category **Integration**, then install and restart. The original
 ESPHome external-component repository is separate and remains available.
@@ -90,6 +97,15 @@ ESPHome external-component repository is separate and remains available.
 
 Controls follow the selected model. Existing QR701 devices keep their settings
 and entity IDs after upgrading. Use **Reconfigure** to change the model.
+
+## Adding a printer model
+
+Model differences live in one `PRINTER_MODELS` table in
+`custom_components/qr701/const.py`: its display/device metadata, text width,
+supported baud rates, and optional cutter capability. Add the model there, then
+verify its ESC/POS commands and status behaviour on hardware. The config flow,
+device identity, receipt wrapping, cutter button, and action validation all use
+that table, so no QR701-specific conditionals need to be copied for a new model.
 
 The device exposes:
 

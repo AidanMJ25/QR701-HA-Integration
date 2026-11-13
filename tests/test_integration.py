@@ -192,6 +192,26 @@ async def test_rp326_rejects_unsupported_baud(hass: HomeAssistant, printer):
     printer["check"].assert_not_awaited()
 
 
+async def test_unknown_model_is_rejected_before_opening_port(hass: HomeAssistant, printer):
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "user"}, data=DATA | {"model": "not-a-printer"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "unsupported_model"}
+    printer["check"].assert_not_awaited()
+
+
+async def test_legacy_rp326_entry_reserves_its_serial_port(hass: HomeAssistant, printer):
+    legacy = MockConfigEntry(
+        domain="rp326", title="Old RP326", data=DATA | {"model": "rp326"}
+    )
+    legacy.add_to_hass(hass)
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"}, data=DATA)
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    printer["check"].assert_not_awaited()
+
+
 async def test_reconfigure_model(hass: HomeAssistant, printer):
     entry = await load(hass)
     result = await hass.config_entries.flow.async_init(
@@ -204,3 +224,14 @@ async def test_reconfigure_model(hass: HomeAssistant, printer):
     assert result["type"] is FlowResultType.ABORT
     assert entry.runtime_data.model == "rp326"
     assert len(hass.states.async_all()) == 16
+
+
+async def test_legacy_entry_is_migrated_to_explicit_qr701_model(hass: HomeAssistant, printer):
+    legacy_data = {key: value for key, value in DATA.items() if key != "model"}
+    entry = MockConfigEntry(domain=DOMAIN, title="Receipt printer", data=legacy_data, version=1)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.version == 2
+    assert entry.data["model"] == "qr701"
+    assert entry.runtime_data.capabilities.text_columns == 32

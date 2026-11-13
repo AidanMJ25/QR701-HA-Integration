@@ -14,6 +14,8 @@ from homeassistant.helpers.selector import SerialPortSelector
 from .const import CONF_BAUDRATE, CONF_STATUS, DEFAULT_BAUDRATE, DOMAIN
 from .printer import RP326Printer
 
+SHARED_DOMAIN = "qr701"
+
 
 def schema(defaults):
     return vol.Schema(
@@ -25,6 +27,16 @@ def schema(defaults):
             ): vol.In([9600, 19200, 38400, 115200]),
             vol.Required(CONF_STATUS, default=defaults.get(CONF_STATUS, True)): bool,
         }
+    )
+
+
+def port_is_configured(hass, device: str, excluding_entry_id: str | None = None) -> bool:
+    """Prevent the legacy and shared integrations from owning one port together."""
+    return any(
+        entry.entry_id != excluding_entry_id
+        and entry.domain in (DOMAIN, SHARED_DOMAIN)
+        and entry.data.get(CONF_DEVICE) == device
+        for entry in hass.config_entries.async_entries()
     )
 
 
@@ -54,6 +66,8 @@ class RP326ConfigFlow(ConfigFlow, domain=DOMAIN):
                 hashlib.sha256(user_input[CONF_DEVICE].encode()).hexdigest()
             )
             self._abort_if_unique_id_configured()
+            if port_is_configured(self.hass, user_input[CONF_DEVICE]):
+                return self.async_abort(reason="already_configured")
             error = await self._validate(user_input)
             if error is None:
                 return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
@@ -67,10 +81,7 @@ class RP326ConfigFlow(ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             unique_id = hashlib.sha256(user_input[CONF_DEVICE].encode()).hexdigest()
-            if any(
-                other.entry_id != entry.entry_id and other.unique_id == unique_id
-                for other in self._async_current_entries()
-            ):
+            if port_is_configured(self.hass, user_input[CONF_DEVICE], entry.entry_id):
                 return self.async_abort(reason="already_configured")
             # The loaded coordinator owns the proxy exclusively. Unload before
             # testing the replacement configuration; restore on validation error.

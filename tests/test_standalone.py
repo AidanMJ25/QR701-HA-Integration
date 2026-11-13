@@ -21,9 +21,19 @@ for name in ("const", "protocol", "printer"):
 
 from qr701_standalone import protocol as p  # noqa: E402
 from qr701_standalone.printer import QR701Printer  # noqa: E402
+from qr701_standalone.const import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_model_capabilities_are_centralized(self):
+        self.assertEqual(get_model(None), PRINTER_MODELS["qr701"])
+        self.assertEqual(get_model("rp326").text_columns, 48)
+        self.assertTrue(get_model("rp326").supports_cut)
+        self.assertFalse(get_model("qr701").supports_cut)
+        self.assertNotIn(57600, get_model("rp326").baudrates)
+        self.assertIn(57600, get_model("qr701").baudrates)
+        self.assertEqual(SUPPORTED_BAUDRATES, (9600, 19200, 38400, 57600, 115200))
+
     def test_model_width_and_cutter(self):
         self.assertIn(b"X" * 48 + b"\nX\n", p.text_receipt("X" * 49, columns=48))
         self.assertIn(b"-" * 48 + b"\n", p.markdown_receipt("---", columns=48))

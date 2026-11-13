@@ -7,7 +7,7 @@ from .entity import QR701Entity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    if entry.runtime_data.model == "rp326":
+    if entry.runtime_data.capabilities.supports_cut:
         async_add_entities([QR701Button(entry.runtime_data, entry, "cut", "Cut paper")])
     async_add_entities(
         [

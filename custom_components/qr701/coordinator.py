@@ -1,4 +1,4 @@
-"""QR701 connection lifecycle and polling."""
+"""Thermal-printer connection lifecycle and polling."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from . import protocol
-from .const import CONF_BAUDRATE, CONF_MODEL, CONF_STATUS, DEFAULT_MODEL, DOMAIN
+from .const import CONF_BAUDRATE, CONF_MODEL, CONF_STATUS, DEFAULT_MODEL, DOMAIN, get_model
 from .printer import QR701Printer
 
 LOGGER = logging.getLogger(__name__)
@@ -22,6 +22,7 @@ class QR701Coordinator(DataUpdateCoordinator):
             hass, LOGGER, name=DOMAIN, config_entry=entry, update_interval=timedelta(seconds=30)
         )
         self.model = entry.data.get(CONF_MODEL, DEFAULT_MODEL)
+        self.capabilities = get_model(self.model)
         self.printer = QR701Printer(
             entry.data["device"], entry.data[CONF_BAUDRATE], entry.data[CONF_STATUS]
         )
@@ -47,10 +48,12 @@ class QR701Coordinator(DataUpdateCoordinator):
         return status
 
     async def async_print(self, encoder, *args, **kwargs):
-        if encoder is protocol.cut and self.model != "rp326":
-            raise ServiceValidationError("Paper cutting is only available for Rongta RP326")
+        if encoder is protocol.cut and not self.capabilities.supports_cut:
+            raise ServiceValidationError(
+                f"Paper cutting is not available for {self.capabilities.label}"
+            )
         if encoder in (protocol.text_receipt, protocol.markdown_receipt):
-            kwargs["columns"] = 48 if self.model == "rp326" else 32
+            kwargs["columns"] = self.capabilities.text_columns
         try:
             payload = encoder(*args, **kwargs)
         except ValueError as err:

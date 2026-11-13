@@ -1,4 +1,4 @@
-"""Pure QR701 ESC/POS encoding, independent of Home Assistant.
+"""Shared ESC/POS encoding, independent of Home Assistant.
 
 Adapted from AidanMJ25/QR701-ESPHome-External-Component, revision
 e09da678a603e2266d961da6965eabb7c35f1178. All text is printed using ASCII;
@@ -216,5 +216,5 @@ def parse_status(values: bytes) -> PrinterStatus:
 
 
 def cut(lines: int = 3) -> bytes:
-    """Feed clear of the print head, then request a partial cut (RP326 only)."""
+    """Feed clear of the print head, then request a partial cut."""
     return feed(lines) + b"\x1dV\x01"

@@ -30,7 +30,8 @@
       "no_response": "No status reply. Check power, baud and RX wiring, or disable hardware status for transmit-only printing.",
       "invalid_response": "Invalid status reply. Check baud rate, wiring and printer status-command support.",
       "proxy_not_ready": "ESPHome is still loading. Wait until the ESPHome device is connected, then try again.",
-      "unsupported_baudrate": "Rongta RP326 supports 9600, 19200, 38400 or 115200 baud. Choose the rate shown on its self-test page."
+      "unsupported_baudrate": "The selected printer model does not support this baud rate. Choose a supported rate from its self-test page.",
+      "unsupported_model": "This printer model is not supported by this version of the integration."
     },
     "abort": {
       "already_configured": "This serial port is already configured.",

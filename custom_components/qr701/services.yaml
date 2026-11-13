@@ -209,7 +209,7 @@
   },
   "cut": {
     "name": "Cut paper",
-    "description": "Feed paper then cut it (Rongta RP326 only).",
+    "description": "Feed paper then cut it on a printer model with cutter support.",
     "fields": {
       "device_id": {
         "name": "Printer",

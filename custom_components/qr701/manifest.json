@@ -14,6 +14,6 @@
   "requirements": [
     "serialx==1.15.1"
   ],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "issue_tracker": "https://github.com/AidanMJ25/QR701-HA-Integration/issues"
 }

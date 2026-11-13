@@ -1,4 +1,4 @@
-"""QR701 thermal printer via ESPHome serial proxy or a local serial port."""
+"""Thermal receipt printers via ESPHome serial proxy or a local serial port."""
 
 from __future__ import annotations
 
