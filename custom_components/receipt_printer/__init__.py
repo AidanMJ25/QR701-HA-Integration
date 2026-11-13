@@ -8,8 +8,8 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 
-from .const import BARCODES, CONF_MODEL, DEFAULT_MODEL, DOMAIN
-from .coordinator import QR701Coordinator
+from .const import BARCODES, DOMAIN
+from .coordinator import ReceiptPrinterCoordinator
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
@@ -77,19 +77,8 @@ async def async_setup(hass, config):
     return True
 
 
-async def async_migrate_entry(hass, entry):
-    """Persist the QR701 default for entries created before model support."""
-    if entry.version == 1:
-        hass.config_entries.async_update_entry(
-            entry,
-            data={CONF_MODEL: DEFAULT_MODEL} | entry.data,
-            version=2,
-        )
-    return True
-
-
 async def async_setup_entry(hass, entry):
-    coordinator = QR701Coordinator(hass, entry)
+    coordinator = ReceiptPrinterCoordinator(hass, entry)
     try:
         await coordinator.async_config_entry_first_refresh()
         entry.runtime_data = coordinator

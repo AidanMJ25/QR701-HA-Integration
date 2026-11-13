@@ -16,7 +16,7 @@ from .printer import PrinterTransport
 LOGGER = logging.getLogger(__name__)
 
 
-class QR701Coordinator(DataUpdateCoordinator):
+class ReceiptPrinterCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, entry):
         super().__init__(
             hass, LOGGER, name=DOMAIN, config_entry=entry, update_interval=timedelta(seconds=30)

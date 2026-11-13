@@ -10,8 +10,8 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry, mock_component
 
-from custom_components.qr701.const import DOMAIN
-from custom_components.qr701.protocol import PrinterStatus
+from custom_components.receipt_printer.const import DOMAIN
+from custom_components.receipt_printer.protocol import PrinterStatus
 
 DATA = {
     "model": "qr701",
@@ -35,15 +35,17 @@ def printer(hass: HomeAssistant):
     mock_component(hass, "usb")
     with (
         patch(
-            "custom_components.qr701.printer.PrinterTransport.check",
+            "custom_components.receipt_printer.printer.PrinterTransport.check",
             new_callable=AsyncMock,
             return_value=IDLE,
         ) as check,
         patch(
-            "custom_components.qr701.printer.PrinterTransport.close", new_callable=AsyncMock
+            "custom_components.receipt_printer.printer.PrinterTransport.close",
+            new_callable=AsyncMock,
         ) as close,
         patch(
-            "custom_components.qr701.printer.PrinterTransport.send", new_callable=AsyncMock
+            "custom_components.receipt_printer.printer.PrinterTransport.send",
+            new_callable=AsyncMock,
         ) as send,
     ):
         yield {"check": check, "close": close, "send": send}
@@ -61,7 +63,7 @@ async def test_user_flow(hass: HomeAssistant, printer):
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "user"
-    with patch("custom_components.qr701.async_setup_entry", return_value=True):
+    with patch("custom_components.receipt_printer.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(result["flow_id"], DATA)
         await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
@@ -179,7 +181,7 @@ async def test_qr701_rejects_cutter(hass: HomeAssistant, printer):
     printer["send"].assert_not_awaited()
 
 
-async def test_legacy_entry_defaults_to_qr701(hass: HomeAssistant, printer):
+async def test_missing_model_defaults_to_qr701(hass: HomeAssistant, printer):
     entry = await load(hass, {key: value for key, value in DATA.items() if key != "model"})
     assert entry.runtime_data.model == "qr701"
     assert len(hass.states.async_all()) == 15
@@ -203,17 +205,6 @@ async def test_unknown_model_is_rejected_before_opening_port(hass: HomeAssistant
     printer["check"].assert_not_awaited()
 
 
-async def test_legacy_rp326_entry_reserves_its_serial_port(hass: HomeAssistant, printer):
-    legacy = MockConfigEntry(domain="rp326", title="Old RP326", data=DATA | {"model": "rp326"})
-    legacy.add_to_hass(hass)
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}, data=DATA
-    )
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
-    printer["check"].assert_not_awaited()
-
-
 async def test_reconfigure_model(hass: HomeAssistant, printer):
     entry = await load(hass)
     result = await hass.config_entries.flow.async_init(
@@ -226,14 +217,3 @@ async def test_reconfigure_model(hass: HomeAssistant, printer):
     assert result["type"] is FlowResultType.ABORT
     assert entry.runtime_data.model == "rp326"
     assert len(hass.states.async_all()) == 16
-
-
-async def test_legacy_entry_is_migrated_to_explicit_qr701_model(hass: HomeAssistant, printer):
-    legacy_data = {key: value for key, value in DATA.items() if key != "model"}
-    entry = MockConfigEntry(domain=DOMAIN, title="Receipt printer", data=legacy_data, version=1)
-    entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    assert entry.version == 2
-    assert entry.data["model"] == "qr701"
-    assert entry.runtime_data.capabilities.text_columns == 32

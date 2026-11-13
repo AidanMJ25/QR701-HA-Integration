@@ -6,7 +6,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
 
-class QR701Entity(CoordinatorEntity):
+class ReceiptPrinterEntity(CoordinatorEntity):
     _attr_has_entity_name = True
 
     def __init__(self, coordinator, entry, key, name):

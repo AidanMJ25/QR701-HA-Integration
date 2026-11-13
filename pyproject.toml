@@ -1,6 +1,6 @@
 [project]
-name = "qr701-ha-integration"
-version = "0.2.1"
+name = "receipt-printer-ha-integration"
+version = "1.0.0"
 description = "Thermal receipt printers for Home Assistant via ESPHome serial proxy"
 requires-python = ">=3.14.2"
 dependencies = ["serialx==1.15.1"]

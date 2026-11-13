@@ -1,9 +1,6 @@
 """Shared thermal-printer integration constants."""
 
-DOMAIN = "qr701"
-# The repository previously shipped RP326 as a separate integration. Keep its
-# domain here solely to prevent two integrations opening the same serial port.
-LEGACY_RP326_DOMAIN = "rp326"
+DOMAIN = "receipt_printer"
 CONF_BAUDRATE = "baudrate"
 CONF_STATUS = "status_enabled"
 DEFAULT_BAUDRATE = 9600

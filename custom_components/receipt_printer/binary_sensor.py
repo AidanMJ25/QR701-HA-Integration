@@ -3,35 +3,35 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 
 from .const import CONF_STATUS
-from .entity import QR701Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     if entry.data[CONF_STATUS]:
         async_add_entities(
             [
-                QR701Fault(
+                ReceiptPrinterFault(
                     entry.runtime_data,
                     entry,
                     "paper_out",
                     "Paper out",
                     BinarySensorDeviceClass.PROBLEM,
                 ),
-                QR701Fault(
+                ReceiptPrinterFault(
                     entry.runtime_data,
                     entry,
                     "cover_open",
                     "Cover",
                     BinarySensorDeviceClass.OPENING,
                 ),
-                QR701Fault(
+                ReceiptPrinterFault(
                     entry.runtime_data, entry, "error", "Error", BinarySensorDeviceClass.PROBLEM
                 ),
             ]
         )
 
 
-class QR701Fault(QR701Entity, BinarySensorEntity):
+class ReceiptPrinterFault(ReceiptPrinterEntity, BinarySensorEntity):
     def __init__(self, coordinator, entry, key, name, device_class):
         super().__init__(coordinator, entry, key, name)
         self.key = key

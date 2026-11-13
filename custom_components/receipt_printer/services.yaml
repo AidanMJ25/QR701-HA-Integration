@@ -1,14 +1,14 @@
 {
   "print_text": {
     "name": "Print text",
-    "description": "Print text on the selected RP326 printer.",
+    "description": "Print text on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },
@@ -25,14 +25,14 @@
   },
   "print_markdown": {
     "name": "Print Markdown",
-    "description": "Print Markdown on the selected RP326 printer.",
+    "description": "Print Markdown on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },
@@ -49,14 +49,14 @@
   },
   "print_qr": {
     "name": "Print QR code",
-    "description": "Print QR code on the selected RP326 printer.",
+    "description": "Print QR code on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },
@@ -98,14 +98,14 @@
   },
   "print_barcode": {
     "name": "Print barcode",
-    "description": "Print barcode on the selected RP326 printer.",
+    "description": "Print barcode on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },
@@ -168,14 +168,14 @@
   },
   "feed": {
     "name": "Feed paper",
-    "description": "Feed paper on the selected RP326 printer.",
+    "description": "Feed paper on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },
@@ -194,14 +194,14 @@
   },
   "refresh_status": {
     "name": "Refresh status",
-    "description": "Refresh status on the selected RP326 printer.",
+    "description": "Refresh status on the selected thermal printer.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       }
@@ -209,14 +209,14 @@
   },
   "cut": {
     "name": "Cut paper",
-    "description": "Feed paper then request a partial cut. Actual cut behavior depends on firmware.",
+    "description": "Feed paper then cut it on a printer model with cutter support.",
     "fields": {
       "device_id": {
         "name": "Printer",
         "required": true,
         "selector": {
           "device": {
-            "integration": "rp326"
+            "integration": "receipt_printer"
           }
         }
       },

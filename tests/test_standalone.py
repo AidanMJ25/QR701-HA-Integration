@@ -9,19 +9,21 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 # Load only the HA-independent modules under an isolated package name.
-ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "qr701"
-package = types.ModuleType("qr701_standalone")
+ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "receipt_printer"
+package = types.ModuleType("receipt_printer_standalone")
 package.__path__ = [str(ROOT)]
 sys.modules[package.__name__] = package
 for name in ("const", "protocol", "printer"):
-    spec = importlib.util.spec_from_file_location(f"qr701_standalone.{name}", ROOT / f"{name}.py")
+    spec = importlib.util.spec_from_file_location(
+        f"receipt_printer_standalone.{name}", ROOT / f"{name}.py"
+    )
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 
-from qr701_standalone import protocol as p  # noqa: E402
-from qr701_standalone.models import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
-from qr701_standalone.printer import QR701Printer  # noqa: E402
+from receipt_printer_standalone import protocol as p  # noqa: E402
+from receipt_printer_standalone.models import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
+from receipt_printer_standalone.printer import PrinterTransport  # noqa: E402
 
 
 class ProtocolTests(unittest.TestCase):
@@ -155,9 +157,13 @@ class MemoryTransportTests(unittest.IsolatedAsyncioTestCase):
             self.clients.append(writer)
             return reader, writer
 
-        self.open_patch = patch("qr701_standalone.printer.serialx.open_serial_connection", connect)
+        self.open_patch = patch(
+            "receipt_printer_standalone.printer.serialx.open_serial_connection", connect
+        )
         self.open_patch.start()
-        self.printer = QR701Printer("esphome-hass://test/?port_name=QR701", 19200, True)
+        self.printer = PrinterTransport(
+            "esphome-hass://test/?port_name=QR701", 19200, True, get_model("qr701")
+        )
 
     async def asyncTearDown(self):
         await self.printer.close()
@@ -255,7 +261,9 @@ class SocketTransportTests(unittest.IsolatedAsyncioTestCase):
                 "Sandbox does not allow local TCP listeners; memory transport tests still run"
             )
         port = self.server.sockets[0].getsockname()[1]
-        self.printer = QR701Printer(f"socket://127.0.0.1:{port}", 19200, True)
+        self.printer = PrinterTransport(
+            f"socket://127.0.0.1:{port}", 19200, True, get_model("qr701")
+        )
 
     async def asyncTearDown(self):
         await self.printer.close()

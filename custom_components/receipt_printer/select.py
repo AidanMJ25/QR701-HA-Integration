@@ -3,14 +3,14 @@
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .entity import QR701Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    async_add_entities([QR701Correction(entry.runtime_data, entry)])
+    async_add_entities([ReceiptPrinterCorrection(entry.runtime_data, entry)])
 
 
-class QR701Correction(QR701Entity, SelectEntity, RestoreEntity):
+class ReceiptPrinterCorrection(ReceiptPrinterEntity, SelectEntity, RestoreEntity):
     _attr_options = ["L", "M", "Q", "H"]
     _attr_icon = "mdi:qrcode"
 

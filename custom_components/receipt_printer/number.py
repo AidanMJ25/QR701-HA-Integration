@@ -3,14 +3,14 @@
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .entity import RP326Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    async_add_entities([RP326Size(entry.runtime_data, entry)])
+    async_add_entities([ReceiptPrinterSize(entry.runtime_data, entry)])
 
 
-class RP326Size(RP326Entity, NumberEntity, RestoreEntity):
+class ReceiptPrinterSize(ReceiptPrinterEntity, NumberEntity, RestoreEntity):
     _attr_native_min_value = 1
     _attr_native_max_value = 16
     _attr_native_step = 1

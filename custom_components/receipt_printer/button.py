@@ -2,15 +2,15 @@
 
 from homeassistant.components.button import ButtonEntity
 
-from .entity import QR701Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     if entry.runtime_data.capabilities.supports_cut:
-        async_add_entities([QR701Button(entry.runtime_data, entry, "cut", "Cut paper")])
+        async_add_entities([ReceiptPrinterButton(entry.runtime_data, entry, "cut", "Cut paper")])
     async_add_entities(
         [
-            QR701Button(entry.runtime_data, entry, key, name)
+            ReceiptPrinterButton(entry.runtime_data, entry, key, name)
             for key, name in (
                 ("print", "Print"),
                 ("print_markdown", "Print Markdown"),
@@ -23,7 +23,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     )
 
 
-class QR701Button(QR701Entity, ButtonEntity):
+class ReceiptPrinterButton(ReceiptPrinterEntity, ButtonEntity):
     _attr_icon = "mdi:printer-pos"
 
     def __init__(self, coordinator, entry, key, name):

@@ -3,13 +3,13 @@
 from homeassistant.components.text import TextEntity, TextMode
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .entity import RP326Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(
         [
-            RP326Text(entry.runtime_data, entry, key, name)
+            ReceiptPrinterText(entry.runtime_data, entry, key, name)
             for key, name in (
                 ("print_text", "Print text"),
                 ("qr_data", "QR data"),
@@ -19,7 +19,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     )
 
 
-class RP326Text(RP326Entity, TextEntity, RestoreEntity):
+class ReceiptPrinterText(ReceiptPrinterEntity, TextEntity, RestoreEntity):
     _attr_native_max = 255
     _attr_mode = TextMode.TEXT
     _attr_icon = "mdi:text-box-edit-outline"

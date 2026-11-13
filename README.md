@@ -60,7 +60,7 @@ The same configuration is available in [examples/esphome.yaml](examples/esphome.
 
 ## Install
 
-1. Copy `custom_components/qr701` into `/config/custom_components/qr701` on Home
+1. Copy `custom_components/receipt_printer` into `/config/custom_components/receipt_printer` on Home
    Assistant. Restart Home Assistant.
 2. Add the UART and serial proxy configuration above to your ESPHome device,
    then flash it. If `printer_uart` already exists, update that block instead of
@@ -83,11 +83,10 @@ The original QR701 ESPHome external component can remain configured alongside
 jobs and status polling so the two control paths do not send commands or consume
 status replies at the same time. Keep UART logging off this printer UART.
 
-The included legacy `rp326` integration may remain installed for existing
-entries, but it cannot be configured on a port already used by the shared
-integration (or vice versa). Remove the old entry before moving that printer to
-the model dropdown; Home Assistant cannot change a config entry's domain in
-place.
+This is a breaking rename: previous `qr701` and standalone `rp326` config
+entries and automations do not migrate. Remove those integrations, add the
+printer again through **Thermal Receipt Printer**, and update automations to use
+the `receipt_printer.*` actions and new device ID.
 
 For HACS, add `https://github.com/AidanMJ25/QR701-HA-Integration` as a custom
 repository with category **Integration**, then install and restart. The original
@@ -95,12 +94,11 @@ ESPHome external-component repository is separate and remains available.
 
 ## Controls
 
-Controls follow the selected model. Existing QR701 devices keep their settings
-and entity IDs after upgrading. Use **Reconfigure** to change the model.
+Controls follow the selected model. Use **Reconfigure** to change the model.
 
 ## Adding a printer model
 
-Each model has its own driver module under `custom_components/qr701/models/`.
+Each model has its own driver module under `custom_components/receipt_printer/models/`.
 The driver holds its display/device metadata, text width, baud rates, cutter
 capability, status queries, and ESC/POS encoding hook. Add a model module and
 register it in `models/__init__.py`, then verify its commands and status behaviour
@@ -126,7 +124,7 @@ Choose the **printer device** in Developer Tools → Actions. Replace
 in `data`; they do not use a `target` entity ID.
 
 ```yaml
-action: qr701.print_markdown
+action: receipt_printer.print_markdown
 data:
   device_id: YOUR_QR701_DEVICE_ID
   text: |-
@@ -139,7 +137,7 @@ data:
 ```
 
 ```yaml
-action: qr701.print_qr
+action: receipt_printer.print_qr
 data:
   device_id: YOUR_QR701_DEVICE_ID
   text: https://blog.aidanmaurinjones.com
@@ -148,7 +146,7 @@ data:
 ```
 
 ```yaml
-action: qr701.print_barcode
+action: receipt_printer.print_barcode
 data:
   device_id: YOUR_QR701_DEVICE_ID
   text: "123456789012"
@@ -160,13 +158,13 @@ data:
 
 | Action | Other fields |
 | --- | --- |
-| `qr701.print_text` | `text`: literal text, wraps at 32 columns (QR701) or 48 (RP326) |
-| `qr701.print_markdown` | `text`: headings, inline styles, lists, quotes, links, rules, fenced code |
-| `qr701.print_qr` | `text`: 1–7092 UTF-8 bytes; `size`: 1–16; `error_correction`: L/M/Q/H |
-| `qr701.print_barcode` | `text`: up to 252 printable ASCII bytes; `format`, `height`: 1–255, `width`: 2–6, `show_text` |
-| `qr701.feed` | `lines`: 0–255, default 3 |
-| `qr701.refresh_status` | No additional fields |
-| `qr701.cut` | RP326 only; `lines`: 0–255, default 3, then partial cut |
+| `receipt_printer.print_text` | `text`: literal text, wraps at 32 columns (QR701) or 48 (RP326) |
+| `receipt_printer.print_markdown` | `text`: headings, inline styles, lists, quotes, links, rules, fenced code |
+| `receipt_printer.print_qr` | `text`: 1–7092 UTF-8 bytes; `size`: 1–16; `error_correction`: L/M/Q/H |
+| `receipt_printer.print_barcode` | `text`: up to 252 printable ASCII bytes; `format`, `height`: 1–255, `width`: 2–6, `show_text` |
+| `receipt_printer.feed` | `lines`: 0–255, default 3 |
+| `receipt_printer.refresh_status` | No additional fields |
+| `receipt_printer.cut` | RP326 only; `lines`: 0–255, default 3, then partial cut |
 
 All actions require `device_id`. Text and Markdown actions accept up to 32,768
 characters. Barcode formats: UPC_A, UPC_E, EAN13, EAN8, CODE39, ITF, CODABAR,

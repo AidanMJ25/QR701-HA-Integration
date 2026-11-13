@@ -3,14 +3,14 @@
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 
 from .const import CONF_STATUS, STATUS_OPTIONS
-from .entity import RP326Entity
+from .entity import ReceiptPrinterEntity
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    async_add_entities([RP326Status(entry.runtime_data, entry)])
+    async_add_entities([ReceiptPrinterStatus(entry.runtime_data, entry)])
 
 
-class RP326Status(RP326Entity, SensorEntity):
+class ReceiptPrinterStatus(ReceiptPrinterEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = STATUS_OPTIONS
     _attr_icon = "mdi:printer-pos"

@@ -9,42 +9,67 @@ import serialx
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_DEVICE, CONF_NAME
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.selector import SerialPortSelector
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    SerialPortSelector,
+)
 
-from .const import CONF_BAUDRATE, CONF_STATUS, DEFAULT_BAUDRATE, DOMAIN
-from .printer import RP326Printer
-
-SHARED_DOMAIN = "qr701"
+from .const import (
+    CONF_BAUDRATE,
+    CONF_MODEL,
+    CONF_STATUS,
+    DEFAULT_BAUDRATE,
+    DEFAULT_MODEL,
+    DOMAIN,
+)
+from .models import MODELS, PRINTER_MODELS, SUPPORTED_BAUDRATES
+from .printer import PrinterTransport
 
 
 def schema(defaults):
     return vol.Schema(
         {
-            vol.Required(CONF_NAME, default=defaults.get(CONF_NAME, "RP326")): str,
+            vol.Required(
+                CONF_MODEL, default=defaults.get(CONF_MODEL, DEFAULT_MODEL)
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[{"value": key, "label": label} for key, label in MODELS.items()],
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            vol.Required(CONF_NAME, default=defaults.get(CONF_NAME, "Receipt printer")): str,
             vol.Required(CONF_DEVICE, default=defaults.get(CONF_DEVICE, "")): SerialPortSelector(),
             vol.Required(
                 CONF_BAUDRATE, default=defaults.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)
-            ): vol.In([9600, 19200, 38400, 115200]),
+            ): vol.In(SUPPORTED_BAUDRATES),
             vol.Required(CONF_STATUS, default=defaults.get(CONF_STATUS, True)): bool,
         }
     )
 
 
 def port_is_configured(hass, device: str, excluding_entry_id: str | None = None) -> bool:
-    """Prevent the legacy and shared integrations from owning one port together."""
+    """Prevent two configured entries from owning the same serial port."""
     return any(
         entry.entry_id != excluding_entry_id
-        and entry.domain in (DOMAIN, SHARED_DOMAIN)
+        and entry.domain == DOMAIN
         and entry.data.get(CONF_DEVICE) == device
         for entry in hass.config_entries.async_entries()
     )
 
 
-class RP326ConfigFlow(ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+class ReceiptPrinterConfigFlow(ConfigFlow, domain=DOMAIN):
+    VERSION = 2
 
     async def _validate(self, data):
-        printer = RP326Printer(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS])
+        try:
+            model = PRINTER_MODELS[data.get(CONF_MODEL, DEFAULT_MODEL)]
+        except KeyError:
+            return "unsupported_model"
+        if data[CONF_BAUDRATE] not in model.baudrates:
+            return "unsupported_baudrate"
+        printer = PrinterTransport(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS], model)
         try:
             await printer.check()
         except ConfigEntryNotReady:
