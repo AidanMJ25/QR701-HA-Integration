@@ -43,4 +43,5 @@ class ReceiptPrinterButton(ReceiptPrinterEntity, ButtonEntity):
         elif self.key == "print_barcode":
             await c.async_print("print_barcode", c.drafts["barcode_data"])
         else:
-            await c.async_print(self.key, c.drafts["print_text"])
+            operation = "print_text" if self.key == "print" else self.key
+            await c.async_print(operation, c.drafts["print_text"])

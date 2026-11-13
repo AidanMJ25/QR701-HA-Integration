@@ -10,6 +10,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry, mock_component
 
+from custom_components.receipt_printer.button import ReceiptPrinterButton
 from custom_components.receipt_printer.const import DOMAIN
 from custom_components.receipt_printer.protocol import PrinterStatus
 
@@ -95,6 +96,13 @@ async def test_setup_entities_print_action_and_unload(hass: HomeAssistant, print
     assert printer["send"].await_args.args[0] == b"\x1b@Hello\n\n\n\n"
     await hass.config_entries.async_unload(entry.entry_id)
     printer["close"].assert_awaited_once()
+
+
+async def test_print_button_uses_model_text_operation(hass: HomeAssistant, printer):
+    entry = await load(hass)
+    entry.runtime_data.drafts["print_text"] = "Hello"
+    await ReceiptPrinterButton(entry.runtime_data, entry, "print", "Print").async_press()
+    assert printer["send"].await_args.args[0] == b"\x1b@Hello\n\n\n\n"
 
 
 async def test_tx_only_has_no_fault_sensors(hass: HomeAssistant, printer):
