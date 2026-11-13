@@ -8,16 +8,18 @@ from contextlib import suppress
 
 import serialx
 
-from .protocol import PrinterStatus, parse_status
+from .models import PrinterModel, get_model
+from .protocol import PrinterStatus
 
 
-class QR701Printer:
+class PrinterTransport:
     """One owner for a UART; jobs and status queries never interleave."""
 
-    def __init__(self, port: str, baudrate: int, status_enabled: bool) -> None:
+    def __init__(self, port: str, baudrate: int, status_enabled: bool, model: PrinterModel) -> None:
         self.port = port
         self.baudrate = baudrate
         self.status_enabled = status_enabled
+        self.model = model
         self.reader: asyncio.StreamReader | None = None
         self.writer = None
         self.lock = asyncio.Lock()
@@ -70,12 +72,12 @@ class QR701Printer:
 
     async def _status(self) -> PrinterStatus:
         values = bytearray()
-        for query in range(1, 5):
-            self.writer.write(bytes([0x10, 0x04, query]))
+        for query in self.model.status_queries:
+            self.writer.write(query)
             async with asyncio.timeout(2):
                 await self.writer.drain()
                 values.extend(await self.reader.readexactly(1))
-        return parse_status(bytes(values))
+        return self.model.parse_status(bytes(values))
 
     async def send(self, payload: bytes, on_sending: Callable[[], None]) -> None:
         """Send exactly once; never retry a partially printed receipt."""
@@ -105,3 +107,10 @@ class QR701Printer:
             except BaseException:
                 await self._disconnect()
                 raise
+
+
+class QR701Printer(PrinterTransport):
+    """Backward-compatible transport alias for standalone protocol consumers."""
+
+    def __init__(self, port: str, baudrate: int, status_enabled: bool) -> None:
+        super().__init__(port, baudrate, status_enabled, get_model("qr701"))

@@ -20,7 +20,7 @@ for name in ("const", "protocol", "printer"):
     spec.loader.exec_module(module)
 
 from qr701_standalone import protocol as p  # noqa: E402
-from qr701_standalone.const import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
+from qr701_standalone.models import PRINTER_MODELS, SUPPORTED_BAUDRATES, get_model  # noqa: E402
 from qr701_standalone.printer import QR701Printer  # noqa: E402
 
 
@@ -33,6 +33,11 @@ class ProtocolTests(unittest.TestCase):
         self.assertNotIn(57600, get_model("rp326").baudrates)
         self.assertIn(57600, get_model("qr701").baudrates)
         self.assertEqual(SUPPORTED_BAUDRATES, (9600, 19200, 38400, 57600, 115200))
+        self.assertEqual(len(get_model("qr701").status_queries), 4)
+        self.assertIn(
+            b"X" * 48 + b"\nX\n",
+            get_model("rp326").encode("print_text", "X" * 49),
+        )
 
     def test_model_width_and_cutter(self):
         self.assertIn(b"X" * 48 + b"\nX\n", p.text_receipt("X" * 49, columns=48))

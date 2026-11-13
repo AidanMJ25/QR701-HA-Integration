@@ -35,14 +35,16 @@ def printer(hass: HomeAssistant):
     mock_component(hass, "usb")
     with (
         patch(
-            "custom_components.qr701.printer.QR701Printer.check",
+            "custom_components.qr701.printer.PrinterTransport.check",
             new_callable=AsyncMock,
             return_value=IDLE,
         ) as check,
         patch(
-            "custom_components.qr701.printer.QR701Printer.close", new_callable=AsyncMock
+            "custom_components.qr701.printer.PrinterTransport.close", new_callable=AsyncMock
         ) as close,
-        patch("custom_components.qr701.printer.QR701Printer.send", new_callable=AsyncMock) as send,
+        patch(
+            "custom_components.qr701.printer.PrinterTransport.send", new_callable=AsyncMock
+        ) as send,
     ):
         yield {"check": check, "close": close, "send": send}
 

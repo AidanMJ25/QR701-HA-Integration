@@ -100,12 +100,12 @@ and entity IDs after upgrading. Use **Reconfigure** to change the model.
 
 ## Adding a printer model
 
-Model differences live in one `PRINTER_MODELS` table in
-`custom_components/qr701/const.py`: its display/device metadata, text width,
-supported baud rates, and optional cutter capability. Add the model there, then
-verify its ESC/POS commands and status behaviour on hardware. The config flow,
-device identity, receipt wrapping, cutter button, and action validation all use
-that table, so no QR701-specific conditionals need to be copied for a new model.
+Each model has its own driver module under `custom_components/qr701/models/`.
+The driver holds its display/device metadata, text width, baud rates, cutter
+capability, status queries, and ESC/POS encoding hook. Add a model module and
+register it in `models/__init__.py`, then verify its commands and status behaviour
+on hardware. The shared config flow, entities, transport, and actions select that
+driver, so model-specific work stays isolated.
 
 The device exposes:
 

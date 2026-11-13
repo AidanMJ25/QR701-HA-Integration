@@ -2,7 +2,6 @@
 
 from homeassistant.components.button import ButtonEntity
 
-from . import protocol
 from .entity import QR701Entity
 
 
@@ -36,17 +35,12 @@ class QR701Button(QR701Entity, ButtonEntity):
         if self.key == "refresh_status":
             await c.async_request_refresh()
         elif self.key == "cut":
-            await c.async_print(protocol.cut, 3)
+            await c.async_print("cut", 3)
         elif self.key == "feed":
-            await c.async_print(protocol.feed, 3)
+            await c.async_print("feed", 3)
         elif self.key == "print_qr":
-            await c.async_print(
-                protocol.qr_receipt, c.drafts["qr_data"], c.qr_size, c.qr_error_correction
-            )
+            await c.async_print("print_qr", c.drafts["qr_data"], c.qr_size, c.qr_error_correction)
         elif self.key == "print_barcode":
-            await c.async_print(protocol.barcode_receipt, c.drafts["barcode_data"])
+            await c.async_print("print_barcode", c.drafts["barcode_data"])
         else:
-            encoder = (
-                protocol.markdown_receipt if self.key == "print_markdown" else protocol.text_receipt
-            )
-            await c.async_print(encoder, c.drafts["print_text"])
+            await c.async_print(self.key, c.drafts["print_text"])

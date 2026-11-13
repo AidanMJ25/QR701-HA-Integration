@@ -24,11 +24,9 @@ from .const import (
     DEFAULT_MODEL,
     DOMAIN,
     LEGACY_RP326_DOMAIN,
-    MODELS,
-    PRINTER_MODELS,
-    SUPPORTED_BAUDRATES,
 )
-from .printer import QR701Printer
+from .models import MODELS, PRINTER_MODELS, SUPPORTED_BAUDRATES
+from .printer import PrinterTransport
 
 
 def schema(defaults):
@@ -72,7 +70,7 @@ class QR701ConfigFlow(ConfigFlow, domain=DOMAIN):
             return "unsupported_model"
         if data[CONF_BAUDRATE] not in model.baudrates:
             return "unsupported_baudrate"
-        printer = QR701Printer(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS])
+        printer = PrinterTransport(data[CONF_DEVICE], data[CONF_BAUDRATE], data[CONF_STATUS], model)
         try:
             await printer.check()
         except ConfigEntryNotReady:
